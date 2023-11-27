@@ -220,5 +220,8 @@ for t in tqdm(range(rot_time)):
     rotated_j = vrotate(vrotate(vrotate(j,[1,0,0],x_rot),[0,1,0],y_rot),[0,0,1],z_rot)
     rotated_k = vrotate(vrotate(vrotate(k,[1,0,0],x_rot),[0,1,0],y_rot),[0,0,1],z_rot)
     imgs.append(generate_img(rotated_i,rotated_j,rotated_k))
-imgs[0].save(filepath,save_all=True,append_images=imgs[1:])
+if len(imgs)==1:
+    imgs[0].save(filepath)
+else:
+    imgs[0].save(filepath,save_all=True,append_images=imgs[1:])
 print(f"Done. Check the image in {filepath}")
