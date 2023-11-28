@@ -2,27 +2,25 @@ import numpy as np
 import os
 from tqdm import tqdm
 import math
-import time
+from numpy.polynomial import polynomial as P
 
 def associated_laguerre(p,q):
-    return ((-1)**p)*laguerre(p+q).deriv(p)
+    return laguerre(p+q).deriv(p)
 def laguerre(q):
     res = []
     for k in range(q,-1,-1):
-        res.append(math.comb(q,k)*(-1)**k/math.factorial(k))
+        res.append(math.comb(q,k)*np.power((-1),k)/math.factorial(k))
     return np.poly1d(res)
 
 
 def associated_legendre(m,l):
-    return lambda x: (-1)**m*np.sqrt(squared_associated_legendre(m,l)(x))
+    return lambda x: (np.power((-1),m)*np.sqrt(squared_associated_legendre(m,l)(x)))
 def squared_associated_legendre(m,l):
-    return np.poly1d([-1,0,1])**m*(legendre(l).deriv(m))**2
+    return lambda x: np.power(np.poly1d([-1,0,1])(x),m)*np.power((legendre(l).deriv(m)(x)),2)
 def legendre(l):
-    return (1/(2**l*math.factorial(l)))*(np.poly1d([1,0,-1])**l).deriv(l)
-
+    return np.poly1d((1/(np.power(2,l)*math.factorial(l)))*np.poly1d(P.polypow(np.poly1d([1,0,-1]),l)).deriv(l))
 def spherical_harmonic(m,l):
     return lambda theta,phi: np.sqrt((2*l+1)/(4*np.pi)*math.factorial(l-m)/math.factorial(l+m))*np.exp(1j*m*phi)*associated_legendre(m,l)(np.cos(theta))
-
 def r(x,y,z):
     return np.sqrt(x**2+y**2+z**2)
 def theta(x,y,z):
@@ -198,6 +196,7 @@ def generate_img(ri,rj,rk):
     scaled_v = (v/(width-1))*(v_max-v_min)+v_min
     vec = ri*scaled_u[:,np.newaxis]+rj*scaled_v[:,np.newaxis]+rk*w
     vec = np.transpose(vec)
+    print(vec)
     if wave_max == 0:
         c = np.power(np.abs(wf(vec[0],vec[1],vec[2])),2)*1000
     else:
@@ -210,12 +209,12 @@ def generate_img(ri,rj,rk):
     return Image.fromarray(data)
 
 if not (a_x or a_y or a_z):
-    rot_time = 0
+    rot_time = 1
 imgs = []
 for t in tqdm(range(rot_time)):
-    x_rot = x_rot_start+t/(rot_time-1)*(x_rot_end-x_rot_start)
-    y_rot = y_rot_start+t/(rot_time-1)*(y_rot_end-y_rot_start)
-    z_rot = z_rot_start+t/(rot_time-1)*(z_rot_end-z_rot_start)
+    x_rot = x_rot_start+t/(rot_time)*(x_rot_end-x_rot_start)
+    y_rot = y_rot_start+t/(rot_time)*(y_rot_end-y_rot_start)
+    z_rot = z_rot_start+t/(rot_time)*(z_rot_end-z_rot_start)
     rotated_i = vrotate(vrotate(vrotate(i,[1,0,0],x_rot),[0,1,0],y_rot),[0,0,1],z_rot)
     rotated_j = vrotate(vrotate(vrotate(j,[1,0,0],x_rot),[0,1,0],y_rot),[0,0,1],z_rot)
     rotated_k = vrotate(vrotate(vrotate(k,[1,0,0],x_rot),[0,1,0],y_rot),[0,0,1],z_rot)
